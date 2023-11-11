@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit imdb links finder",
+  "version": "1.0.0",
+  "description": "Finding tv/movies imdb links from reddit comments",
+  "icons": {
+    "16": "imdb-logo.png",
+    "48": "imdb-logo.png",
+    "128": "imdb-logo.png"
+  },
+  "background": {
+    "service_worker": "./static/js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["./static/js/content.js"]
+    }
+  ],
+  "action": {
+    "default_title": "Imdb links generator",
+    "default_popup": "index.html"
+  },
+  "permissions": ["storage", "tabs", "activeTab"]
+}
