@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import './App.css'
-import { Counter } from '../Counter'
 import { tabs} from 'webextension-polyfill'
 import { Message } from '../../background'
 import { Actions, getCurrentTab } from '../../helpers/tabs'
@@ -15,7 +14,7 @@ function App() {
   
   return (
     <div className="App">
-      <Counter />
+      <h3>Imdb links from  text finder</h3>
     </div>
   )
 }

@@ -1,5 +1,6 @@
+import { Nullable } from "../types";
+import { DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH } from "./constants";
 
-const MINE_TITLE_LENGTH =3;
 
 const redditSpecificWords:Record<string,any> = {
   "edit": "edit",
@@ -156,8 +157,6 @@ const invalidWords:Record<string,any> ={
   "we've": "we've",
 }
 
-type Nullable<T> = T | null | undefined;
-
 const validateTitle = function(title:Nullable<string>){
     if(!title){
     return false;
@@ -181,9 +180,14 @@ function isUppercaseStart(str:string) {
   // Check if the first character is uppercase
   return /[A-Z]$/.test(str[0]) 
 }
-export function extractValidMovieTitleFromText(text:Nullable<string>) {
+
+export const filterProcessedNodes = function(node:Nullable<HTMLElement>) {
+  return node?.getAttribute(DATA_PROCESSED_ATTR) !== "true";
+}
+
+export function extractValidMovieTitleFromText(text:Nullable<string>):string[] {
     if(!text){
-        return {}
+        return []
     }
      const res:Record<string,boolean> = {}
     let tempWord = "";
