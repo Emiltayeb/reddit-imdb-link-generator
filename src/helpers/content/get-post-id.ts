@@ -1,7 +1,7 @@
 import { Nullable } from "../types";
 import { SupportedSites } from "./constants";
 
-export const getPostId=  () => {
+export const getPagePostAndSite=  () => {
     let postId = "",site:Nullable<SupportedSites> ;
     switch (window.location.hostname) {
         case SupportedSites.REDDIT:

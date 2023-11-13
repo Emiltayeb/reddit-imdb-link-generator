@@ -1,20 +1,28 @@
-import { extractValidMovieTitleFromText, getUniqueId } from ".";
+import { extractValidMovieTitleFromText,filterProcessedNodes, getUniqueId } from ".";
 import { Nullable } from "../types";
-import { DATA_ID_ATTR, SupportedSites, siteCommentsSelectors } from "./constants";
+import { DATA_ID_ATTR, DATA_PROCESSED_ATTR, SupportedSites, siteCommentsSelectors } from "./constants";
 import { getMultipleDomElements } from "./dom";
 
 
 
-export const getMovieTitlesAndIds = (site:Nullable<SupportedSites>) => {
+export const processMovieTitlesAndIds = (site:Nullable<SupportedSites>) => {
     if(!site) return [];
-    const commentsNodes =  Array.from(getMultipleDomElements(siteCommentsSelectors[site]))
-    const id = getUniqueId();
-   return commentsNodes.map(node=>{
-     node.setAttribute(DATA_ID_ATTR, getUniqueId());
+    const commentsNodes =  Array.from(getMultipleDomElements(siteCommentsSelectors[site])).filter(filterProcessedNodes)
+    let allText= "";
+    const res = commentsNodes.map(node=>{
+     const id = getUniqueId();
+    node.setAttribute(DATA_ID_ATTR, id);
+
+    const text = extractValidMovieTitleFromText(node)
+    if(!text.length) return null;
+    allText += text.join(" ") + " ";
     return {
-        text:extractValidMovieTitleFromText(node.textContent),
+        text,
         id
     };
-   })
+   }).filter(Boolean)
+   console.log(allText);
+   
+   return res;
 }
 

@@ -1,198 +1,258 @@
 import { Nullable } from "../types";
 import { DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH } from "./constants";
+import { createImdbLink } from "./create-imdb-link";
 
 
 const redditSpecificWords:Record<string,any> = {
   "edit": "edit",
 }
-const invalidWords:Record<string,any> ={
-  "the": "the",
-  "but": "but",
-  "yes": "yes",
-  "no": "no",
-  "and": "and",
-  "or": "or",
-  "a": "a",
-  "an": "an",
-  "of": "of",
-  "in": "in",
-  "on": "on",
-  "at": "at",
-  "to": "to",
-  "for": "for",
-  "from": "from",
-  "by": "by",
-  "with": "with",
-  "without": "without",
-  "about": "about",
-  "above": "above",
-  "after": "after",
-  "along": "along",
-  "among": "among",
-  "around": "around",
-  "as": "as",
-  "before": "before",
-  "behind": "behind",
-  "below": "below",
-  "beneath": "beneath",
-  "beside": "beside",
-  "between": "between",
-  "beyond": "beyond",
-  "during": "during",
-  "except": "except",
-  "following": "following",
-  "inside": "inside",
-  "into": "into",
-  "like": "like",
-  "near": "near",
-  "off": "off",
-  "onto": "onto",
-  "opposite": "opposite",
-  "outside": "outside",
-  "over": "over",
-  "past": "past",
-  "since": "since",
-  "through": "through",
-  "till": "till",
-  "toward": "toward",
-  "under": "under",
-  "underneath": "underneath",
-  "until": "until",
-  "up": "up",
-  "upon": "upon",
-  "across": "across",
-  "against": "against",
-  "amongst": "amongst",
-  "amid": "amid",
-  "amidst": "amidst",
-  "atop": "atop",
-  "via": "via",
-  "within": "within",
-  "down": "down",
-  "out": "out",
-  "back": "back",
-  "forward": "forward",
-  "here": "here",
-  "there": "there",
-  "now": "now",
-  "then": "then",
-  "when": "when",
-  "where": "where",
-  "why": "why",
-  "how": "how",
-  "all": "all",
-  "any": "any",
-  "both": "both",
-  "each": "each",
-  "few": "few",
-  "more": "more",
-  "most": "most",
-  "other": "other",
-  "some": "some",
-  "such": "such",
-  "only": "only",
-  "own": "own",
-  "same": "same",
-  "so": "so",
-  "than": "than",
-  "too": "too",
-  "very": "very",
-  "s": "s",
-  "t": "t",
-  "can": "can",
-  "will": "will",
-  "just": "just",
-  "don": "don",
-  "should": "should",
-  "i": "i",
-  "you": "you",
-  "he": "he",
-  "she": "she",
-  "it": "it",
-  "we": "we",
-  "they": "they",
-  "me": "me",
-  "him": "him",
-  "her": "her",
-  "us": "us",
-  "them": "them",
-  "my": "my",
-  "your": "your",
-  "his": "his",
-  "its": "its",
-  "our": "our",
-  "their": "their",
-  "mine": "mine",
-  "yours": "yours",
-  "hers": "hers",
-  "ours": "ours",
-  "theirs": "theirs",
-  "this": "this",
-  "that": "that",
-  "these": "these",
-  "those": "those",
-  "who": "who",
-  "whom": "whom",
-  "which": "which",
-  "what": "what",
-  "whose": "whose",
-  "whoever": "whoever",
-  "whatever": "whatever",
-  "whichever": "whichever",
-  "whomever": "whomever",
-  "whosever": "whosever",
-  "so i": "so i",
-  "am i": "am i",
-  "i've": "i've",
-  "i'm": "i'm",
-  "i'll": "i'll",
-  "i'd": "i'd",
-  "you've": "you've",
-  "you're": "you're",
-  "you'll": "you'll",
-  "you'd": "you'd",
-  "he's": "he's",
-  "she's": "she's",
-  "it's": "it's",
-  "we've": "we've",
-}
+const invalidWords: Record<string, boolean> = {
+  "the": true,
+  "but": true,
+  "but i": true,
+  "yes": true,
+  "thanks": true,
+  "anyway": true,
+  "someone": true,
+  "actually": true,
+  "one": true,
+  "two": true,
+  "great": true,
+  "three": true,
+  "yeah": true,
+  "first": true,
+  "second": true,
+  "third": true,
+  "someones": true,
+  "thats": true,
+  "that's": true,
+  "dont": true,
+  "don't": true,
+  "but,": true,
+  "shame": true,
+  "stupid": true,
+  "nope": true,
+  "nope.": true,
+  "nope,": true,
+  "damm": true,
+  "haha": true,
+  "damn": true,
+  "yes.": true,
+  "yes,": true,
+  "yes!": true,
+  "one is": true,
+  "no": true,
+  "and": true,
+  "or": true,
+  "a": true,
+  "an": true,
+  "of": true,
+  "in": true,
+  "on": true,
+  "at": true,
+  "to": true,
+  "for": true,
+  "from": true,
+  "by": true,
+  "with": true,
+  "without": true,
+  "about": true,
+  "above": true,
+  "after": true,
+  "along": true,
+  "among": true,
+  "around": true,
+  "have": true,
+  "has": true,
+  "had": true,
+  "having": true,
+  "came": true,
+  "as": true,
+  "before": true,
+  "behind": true,
+  "below": true,
+  "beneath": true,
+  "beside": true,
+  "between": true,
+  "beyond": true,
+  "during": true,
+  "except": true,
+  "following": true,
+  "inside": true,
+  "into": true,
+  "theres": true,
+  "like": true,
+  "although": true,
+  "near": true,
+  "off": true,
+  "onto": true,
+  "opposite": true,
+  "outside": true,
+  "over": true,
+  "past": true,
+  "since": true,
+  "through": true,
+  "till": true,
+  "toward": true,
+  "under": true,
+  "underneath": true,
+  "until": true,
+  "up": true,
+  "upon": true,
+  "across": true,
+  "against": true,
+  "amongst": true,
+  "amid": true,
+  "amidst": true,
+  "atop": true,
+  "via": true,
+  "within": true,
+  "down": true,
+  "out": true,
+  "back": true,
+  "forward": true,
+  "here": true,
+  "there": true,
+  "now": true,
+  "then": true,
+  "when": true,
+  "where": true,
+  "why": true,
+  "how": true,
+  "all": true,
+  "any": true,
+  "both": true,
+  "each": true,
+  "few": true,
+  "more": true,
+  "most": true,
+  "other": true,
+  "some": true,
+  "such": true,
+  "only": true,
+  "own": true,
+  "same": true,
+  "so": true,
+  "than": true,
+  "too": true,
+  "very": true,
+  "s": true,
+  "t": true,
+  "can": true,
+  "will": true,
+  "just": true,
+  "don": true,
+  "should": true,
+  "i": true,
+  "you": true,
+  "he": true,
+  "she": true,
+  "it": true,
+  "we": true,
+  "they": true,
+  "me": true,
+  "him": true,
+  "her": true,
+  "us": true,
+  "them": true,
+  "my": true,
+  "your": true,
+  "his": true,
+  "its": true,
+  "our": true,
+  "their": true,
+  "mine": true,
+  "yours": true,
+  "hers": true,
+  "ours": true,
+  "theirs": true,
+  "this": true,
+  "that": true,
+  "these": true,
+  "those": true,
+  "who": true,
+  "whom": true,
+  "which": true,
+  "what": true,
+  "whose": true,
+  "whoever": true,
+  "even" : true,
+  "whatever": true,
+  "whichever": true,
+  "whomever": true,
+  "whosever": true,
+  "so i": true,
+  "am i": true,
+  "ive": true,
+  "im": true,
+  "ill": true,
+  "id": true,
+  "youve": true,
+  "youre": true,
+  "youll": true,
+  "youd": true,
+  "hes": true,
+  "got": true,
+  "agree": true,
+  "havent": true,
+  "fuck" :true,
+  "shes": true,
+  "would" : true,
+  "weve": true,
+  "thank": true,
+  "if i": true,
+};
 
-const validateTitle = function(title:Nullable<string>){
+// [1,2].filter(n=> n >1) // [2]
+const filterTitle = function(title:Nullable<string>){
     if(!title){
     return false;
     }
-  // check if the title is a single word and if so, its must not match any of the invalid words
-  return title.length > MINE_TITLE_LENGTH && !invalidWords[title.toLowerCase()] && !redditSpecificWords[title.toLowerCase()];
+    // [.a.v.c].split() -> 
+    // if it has more then 1 dot in the title - false
+    if(title.split('.').length > 1){
+      return false
+    }
+    title = title.replace(/,|"|\.|'/g, "");
+
+    // check if the title is a single word and if so, its must not match any of the invalid words
+    return title.split(" ").length > 1 &&  title.length >= MINE_TITLE_LENGTH &&
+    !invalidWords[title.toLowerCase()] &&
+  !redditSpecificWords[title.toLowerCase()];
 }
 
 function isUppercaseStart(str:string) {
+  const firstChar = str[0];
  if (str.includes('.') ) {
   const haveMultipleDots =str.split(".").slice(1).length > 1
   if(haveMultipleDots){
     return false;
   }
    const indexOfPoints =str.indexOf(".");
-   if(indexOfPoints === 0 ||( str.length > 2 && indexOfPoints !== str.length -1)){
+   if(indexOfPoints === 0  ||( str.length > 2 && indexOfPoints !== str.length -1)){
     return false;
     
    }
   }
+  if(`"` === firstChar){
+    return true
+  }
   // Check if the first character is uppercase
-  return /[A-Z]$/.test(str[0]) 
+  return /[A-Z]$/.test(firstChar) 
 }
 
-export const filterProcessedNodes = function(node:Nullable<HTMLElement>) {
-  return node?.getAttribute(DATA_PROCESSED_ATTR) !== "true";
-}
-
-export function extractValidMovieTitleFromText(text:Nullable<string>):string[] {
+export function extractValidMovieTitleFromText(node:Element):string[] {
+  if(!node.textContent) return [];
+  node.textContent = node.textContent.replaceAll("’","'")
+  const text = node?.textContent;
     if(!text){
         return []
     }
+    // try to ex
      const res:Record<string,boolean> = {}
     let tempWord = "";
    const titleWords = text.split(" ");
-    for(const word of titleWords){
+    for(const word of titleWords){  
       if(isUppercaseStart(word)){
         tempWord += " " +word;
       }else{
@@ -206,7 +266,16 @@ export function extractValidMovieTitleFromText(text:Nullable<string>):string[] {
       if(text.length > 1 && word === titleWords[titleWords.length -1] && !res[tempWord] ){
         res[text] = true
       }    
-      }      
-  return Object.keys(res).filter(validateTitle)
+    }      
+  const final =  Object.keys(res).filter(filterTitle)
+  if(final.length){
+   try {
+    const regex = new RegExp(final.join("|"), "gi");
+    node.innerHTML = node.textContent.replace(regex,(movieTitle)=>createImdbLink(movieTitle))
+   } catch (error) {
+    
+   }
+  }
+  return final;
 }
  

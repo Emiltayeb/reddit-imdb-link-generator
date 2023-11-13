@@ -1,11 +1,7 @@
 import { runtime, storage } from 'webextension-polyfill'
 import { Actions, getCurrentTab } from '../helpers/tabs'
+import { Message } from '../helpers/types'
 
-export type Message = {
-  from: string
-  to: string
-  action: Actions
-}
 
 // async function getCurrentTab() {
 //   const list = await tabs.query({ active: true, currentWindow: true })
