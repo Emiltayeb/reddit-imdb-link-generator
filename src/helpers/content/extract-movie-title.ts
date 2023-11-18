@@ -1,6 +1,7 @@
 import { Nullable } from "../types";
-import { DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH } from "./constants";
-import { createImdbLink } from "./create-imdb-link";
+import { DATA_ID_ATTR, MINE_TITLE_LENGTH, SupportedSites, SupportedSitesUrls, config } from "./constants";
+import { getMultipleDomElements, filterProcessedNodes, createImdbLink } from "./dom";
+import { getUniqueId } from "./utils";
 
 
 const redditSpecificWords:Record<string,any> = {
@@ -203,19 +204,14 @@ const invalidWords: Record<string, boolean> = {
   "if i": true,
 };
 
-// [1,2].filter(n=> n >1) // [2]
 const filterTitle = function(title:Nullable<string>){
     if(!title){
     return false;
     }
-    // [.a.v.c].split() -> 
-    // if it has more then 1 dot in the title - false
     if(title.split('.').length > 1){
       return false
     }
     title = title.replace(/,|"|\.|'/g, "");
-
-    // check if the title is a single word and if so, its must not match any of the invalid words
     return title.split(" ").length > 1 &&  title.length >= MINE_TITLE_LENGTH &&
     !invalidWords[title.toLowerCase()] &&
   !redditSpecificWords[title.toLowerCase()];
@@ -279,3 +275,20 @@ export function extractValidMovieTitleFromText(node:Element):string[] {
   return final;
 }
  
+
+export const processMovieTitlesAndIds = (site:SupportedSitesUrls) => {
+  if(!site || site !== SupportedSites.REDDIT) return [];
+  const commentsNodes =  Array.from(getMultipleDomElements(config[site].commentSelector)).filter(filterProcessedNodes)
+  const res = commentsNodes.map(node=>{
+   const id = getUniqueId();
+  node.setAttribute(DATA_ID_ATTR, id);
+
+  const text = extractValidMovieTitleFromText(node)
+  if(!text.length) return null;
+  return {
+      text,
+      id
+  };
+ }).filter(Boolean)
+ return res;
+}

@@ -45,7 +45,7 @@ function App() {
     runtime.onMessage.addListener((message: Message) => {
       if(message.to !== "popup") return
       const { action } = message
-      if(action === Actions.FINISHED_PROCESS_COMMENTS){
+      if(action === Actions.FINISHED_ANALYZE_MOVIE_IN_COMMENTS){
         setLinksToStorage(message.data)
       }
   })
