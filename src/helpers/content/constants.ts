@@ -6,7 +6,8 @@ export const MINE_TITLE_LENGTH =3;
 export const ROVIE_ID = "rovie-id";
 export const ROVIE_IMDB_URL_OPEN_QP="rovie-imdb-url-open";
 export const ROVIE_DAILOG_ID = "rovie-dailog-id";
-export const getCommentSelector = (id:string) => `[${DATA_ID_ATTR}='${id}']`;
+export const ROVIE_DIALOG_WRAPPER = "dialog-wrapper";
+export const getcommentContent = (id:string) => `[${DATA_ID_ATTR}='${id}']`;
 
 
 export const SupportedSites =  {
@@ -19,7 +20,9 @@ export type SupportedSitesUrls= typeof SupportedSites[keyof typeof SupportedSite
 
 export const config = {
     [SupportedSites.REDDIT] :{
-        commentSelector: "[data-testid='comment']",
+        wholeComment: ".Comment",
+        userInfoSelector:`[data-testid="comment_author_link"]`,
+        commentContent: "[data-testid='comment']",
         allowedSubReddits: ["movies", "MovieSuggestions"] as string[]
     },
     [SupportedSites.IMDB] :{

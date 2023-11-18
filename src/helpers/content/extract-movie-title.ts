@@ -1,8 +1,25 @@
 import { Nullable } from "../types";
-import { DATA_ID_ATTR, MINE_TITLE_LENGTH, SupportedSites, SupportedSitesUrls, config } from "./constants";
-import { getMultipleDomElements, filterProcessedNodes, createImdbLink } from "./dom";
-import { getUniqueId } from "./utils";
+import { DATA_ID_ATTR, DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH, ROVIE_IMDB_URL_OPEN_QP, SupportedSites, SupportedSitesUrls, config } from "./constants";
+import { createImdbHref, getUniqueId } from "./utils";
 
+
+
+export const createImdbLink = function (movieTitle:string) {
+  const linkEl = document.createElement("a");
+  linkEl.href = createImdbHref(movieTitle);
+  linkEl.target = "_blank";
+  linkEl.rel = "noopener noreferrer";
+  linkEl.textContent = movieTitle;
+  linkEl.classList.add("rovie-btn");
+  return linkEl.outerHTML;
+} 
+
+
+export const getMultipleDomElements = (selector:string)=>document.querySelectorAll(selector);
+
+export const filterProcessedNodes = function(node:Nullable<Element>) {
+  return node?.getAttribute(DATA_PROCESSED_ATTR) !== "true";
+}
 
 const redditSpecificWords:Record<string,any> = {
   "edit": "edit",
@@ -278,7 +295,7 @@ export function extractValidMovieTitleFromText(node:Element):string[] {
 
 export const processMovieTitlesAndIds = (site:SupportedSitesUrls) => {
   if(!site || site !== SupportedSites.REDDIT) return [];
-  const commentsNodes =  Array.from(getMultipleDomElements(config[site].commentSelector)).filter(filterProcessedNodes)
+  const commentsNodes =  Array.from(getMultipleDomElements(config[site].commentContent)).filter(filterProcessedNodes)
   const res = commentsNodes.map(node=>{
    const id = getUniqueId();
   node.setAttribute(DATA_ID_ATTR, id);

@@ -1,4 +1,3 @@
-import { runtime, storage } from "webextension-polyfill"
 
 
 export const logger = (...message: any) => {
@@ -6,3 +5,8 @@ export const logger = (...message: any) => {
     // if(!isDev) return
     console.log(...message)
 }
+
+export const escapeRegExp = function(str:string) {
+    return str.replace(/[.*+?^${}()[\]\\]/g, '\\$&'); // $& means the whole matched string
+  }
+  

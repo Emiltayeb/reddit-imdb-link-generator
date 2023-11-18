@@ -1,12 +1,10 @@
 import { runtime } from 'webextension-polyfill'
 import { Actions } from '../helpers/tabs';
-import { ROVIE_ID, getPageInfo, getUniqueId, config, SupportedSites, handleMovieToOpen,  getCurrentSite, getImdbPageInfo, handleNewCommentAddedToDom } from '../helpers/content';
+import { ROVIE_ID, getPageInfo, getUniqueId, config, SupportedSites, handleMovieToOpen,  getCurrentSite, getImdbPageInfo, handleNewCommentAddedToDom, injectDialogIntoDom, ROVIE_DAILOG_ID } from '../helpers/content';
 import { Message } from '../helpers/types';
 import { logger } from '../helpers/utils';
 
 const proceedCommentsMap:any = {};
-
-
 const isCommentAlreadyProcessed = (comment:Element) => {
   const id = comment.getAttribute(ROVIE_ID);
   if(!id) return false;
@@ -15,25 +13,25 @@ const isCommentAlreadyProcessed = (comment:Element) => {
 
 
 const initIntersectionObserver = (nodes?:Element[]) => {
-   nodes = nodes || Array.from(document.querySelectorAll(config[SupportedSites.REDDIT].commentSelector));
+   nodes = nodes || Array.from(document.querySelectorAll(config[SupportedSites.REDDIT].commentContent));
   let observer=  new IntersectionObserver(callbackFunction,{ root: null,rootMargin: '0px',threshold: 1});;
   function callbackFunction(entries:IntersectionObserverEntry[]){ 
     entries.forEach( async (entry)=>{
-      if (entry.isIntersecting) {
-        await  handleNewCommentAddedToDom(entry.target);
+      if (entry.isIntersecting) {        
+          handleNewCommentAddedToDom(entry.target);
          observer.unobserve(entry.target);
         }
     })
   }
-  nodes.forEach((p)=>{
-    if(isCommentAlreadyProcessed(p)) {
-      return;
-    };
+
+  for (const p of nodes) {
+    if(!p || isCommentAlreadyProcessed(p)) continue;
     const id = getUniqueId();
     p.setAttribute(ROVIE_ID,id);
     proceedCommentsMap[id] = p;
     observer.observe(p);
-  })
+  }
+
 }
 
 const initMutationObserver = () => {
@@ -72,9 +70,8 @@ const handleImdbPage = () => {
 }
 
 const handleRedditPage = (action:Actions) => {
+  injectDialogIntoDom()
   const {postId,subReddit} = getPageInfo();
-  console.log({subReddit});
-  
   switch (action) {
     case Actions.ANALYZE_MOVIE_IN_COMMENTS:
       if(!postId || !config[SupportedSites.REDDIT].allowedSubReddits.includes(subReddit)){
@@ -107,4 +104,13 @@ runtime.onMessage.addListener(async ({to,from,action}: Message,sender) => {
   return true
 })
 
+
+document.addEventListener("click",()=>{
+  const dialogOpen = document.querySelector(`[data-dialog=${ROVIE_DAILOG_ID}][open]`) as HTMLDialogElement;
+  console.log(dialogOpen);
+  
+  if(dialogOpen){
+    dialogOpen.close();
+  }
+})
 

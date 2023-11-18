@@ -7,17 +7,16 @@ import { OMDB_MOVIE_MOCK } from '../helpers/background/mocks';
 // runtime.onInstalled.addListener(() => {
 // })
 
-const sleep = new Promise((resolve) => setTimeout(resolve, 1000));
+const sleep = () => new Promise((resolve) => setTimeout(resolve, 1000));
 
 const renderMockMovie = async function(postText:string){
-  await sleep;
+  await sleep();
   const firstWord = postText.split(" ")[0];
   return {movies:JSON.stringify({movies:[firstWord]})};
 }
 
 const handleLambdaRequest = async (url:string,body:any) => {
   try {
-    console.log("calling api 😢 ");
    const response = await fetch(url, {
      method: 'POST',
      body:JSON.stringify(body)
@@ -31,14 +30,16 @@ const handleLambdaRequest = async (url:string,body:any) => {
  }
 }
 const handleAnalyzeMovieInCommentReq = async (postText:string,mock=false) => {
+  console.log("calling api 😢 ");
   if(mock) return renderMockMovie(postText);
   return await handleLambdaRequest(LAMBDA_URL,postText);
 }
 
 
 const handleFetchMovieDataReq = async (movieTitle:string,mock=false) => {
+  console.log("calling api 😢 ");
   if(mock){
-    await sleep;
+    await sleep();
     return OMDB_MOVIE_MOCK
   }
   return await handleLambdaRequest(`${LAMBDA_URL}?movieDetials=${movieTitle}`,movieTitle);
