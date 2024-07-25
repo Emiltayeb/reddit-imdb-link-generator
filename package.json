@@ -10,6 +10,8 @@
     "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "lodash.throttle": "^4.1.1",
+    "openai": "^4.17.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -29,7 +31,7 @@
     "build": "INLINE_RUNTIME_CHUNK=false react-app-rewired build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "watch": "watch 'npm run build' ./src"
+    "watch": "watch 'npm run build' ./src ./public"
   },
   "eslintConfig": {
     "extends": [
@@ -50,9 +52,12 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash.throttle": "^4.1.9",
+    "@types/sanitize-html": "^2.9.4",
     "@types/webextension-polyfill": "^0.10.0",
     "customize-cra": "^1.0.0",
     "prettier": "2.8.7",
-    "react-app-rewired": "^2.2.1"
+    "react-app-rewired": "^2.2.1",
+    "sanitize-html": "^2.11.0"
   }
 }

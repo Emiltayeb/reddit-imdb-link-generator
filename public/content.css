@@ -1,0 +1,53 @@
+:root {
+  --imdb-color: rgb(245, 197, 24);
+}
+
+.rovie-btn {
+  color: var(--imdb-color);
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+#rovie-loader path {
+  fill: var(--imdb-color);
+}
+
+[data-dialog='rovie-dailog-id'][open] {
+  margin: 0;
+  z-index: 9999;
+  max-width: 60%;
+  display: flex;
+}
+
+[data-dialog='rovie-dailog-id'] img {
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+}
+
+[data-dialog='rovie-dailog-id'] .rating {
+  color: var(--imdb-color);
+  font-size: small;
+  display: inline-flex;
+  align-items: center;
+}
+
+[data-dialog='rovie-dailog-id'] .rating svg {
+  width: 12px;
+  height: 12px;
+}
+
+[data-dialog='rovie-dailog-id'] h2 {
+  color: var(--imdb-color);
+  font-size: 1.5rem;
+  margin: 0;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.movie-details a {
+  color: var(--imdb-color);
+  text-decoration: underline;
+}

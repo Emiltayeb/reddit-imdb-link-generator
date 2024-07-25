@@ -1,0 +1,1 @@
+export const LAMBDA_URL = "https://zuk34whn22.execute-api.us-west-1.amazonaws.com/default/imdb-chrome-extensions"
