@@ -1,5 +1,5 @@
-import { Nullable } from "../types";
-import { DATA_ID_ATTR, DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH, ROVIE_IMDB_URL_OPEN_QP, SupportedSites, SupportedSitesUrls, config } from "./constants";
+import { Nullable, SupportedSitesUrls } from "../types";
+import { DATA_ID_ATTR, DATA_PROCESSED_ATTR, MINE_TITLE_LENGTH, SupportedSites, config } from "./constants";
 import { createImdbHref, getUniqueId } from "./utils";
 
 
@@ -295,7 +295,7 @@ export function extractValidMovieTitleFromText(node:Element):string[] {
 
 export const processMovieTitlesAndIds = (site:SupportedSitesUrls) => {
   if(!site || site !== SupportedSites.REDDIT) return [];
-  const commentsNodes =  Array.from(getMultipleDomElements(config[site].commentContent)).filter(filterProcessedNodes)
+  const commentsNodes =  Array.from(getMultipleDomElements(config[site].selectors.commentContent)).filter(filterProcessedNodes)
   const res = commentsNodes.map(node=>{
    const id = getUniqueId();
   node.setAttribute(DATA_ID_ATTR, id);

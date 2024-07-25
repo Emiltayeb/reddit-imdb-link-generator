@@ -1,116 +1,148 @@
 import { runtime } from 'webextension-polyfill'
-import { Actions } from '../helpers/tabs';
-import { ROVIE_ID, getPageInfo, getUniqueId, config, SupportedSites, handleMovieToOpen,  getCurrentSite, getImdbPageInfo, handleNewCommentAddedToDom, injectDialogIntoDom, ROVIE_DAILOG_ID } from '../helpers/content';
-import { Message } from '../helpers/types';
-import { logger } from '../helpers/utils';
+import { Actions } from '../helpers/tabs'
+import {
+  getPageInfo,
+  config,
+  SupportedSites,
+  handleMovieToOpen,
+  getCurrentSite,
+  getImdbPageInfo,
+  handleNewCommentAddedToDom,
+  injectDialogIntoDom,
+  ROVIE_DAILOG_ID,
+  getCommentId,
+  isCommentAlreadyProcessed,
+} from '../helpers/content'
+import { logger } from '../helpers/utils'
+import { Message } from '../helpers/types'
 
-const proceedCommentsMap:any = {};
-const isCommentAlreadyProcessed = (comment:Element) => {
-  const id = comment.getAttribute(ROVIE_ID);
-  if(!id) return false;
-  return proceedCommentsMap[id];
-}
+const observersMap = new Map<string, boolean>()
 
+const initIntersectionObserver = (nodes?: HTMLElement[]) => {
+  nodes = (
+    nodes ||
+    Array.from(
+      document.querySelectorAll(config[SupportedSites.REDDIT].selectors.wholeComment),
+    )
+  ).filter((p) => !isCommentAlreadyProcessed(p))
 
-const initIntersectionObserver = (nodes?:Element[]) => {
-   nodes = nodes || Array.from(document.querySelectorAll(config[SupportedSites.REDDIT].commentContent));
-  let observer=  new IntersectionObserver(callbackFunction,{ root: null,rootMargin: '0px',threshold: 1});;
-  function callbackFunction(entries:IntersectionObserverEntry[]){ 
-    entries.forEach( async (entry)=>{
-      if (entry.isIntersecting) {        
-          handleNewCommentAddedToDom(entry.target);
-         observer.unobserve(entry.target);
-        }
+  logger('[initIntersectionObserver]', {
+    nodes,
+    actual: document.querySelectorAll(config[SupportedSites.REDDIT].selectors.wholeComment)
+  })
+  let observer = new IntersectionObserver(callbackFunction, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  })
+  function callbackFunction(entries: IntersectionObserverEntry[]) {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting) {
+        logger('Observing intersecting:', entry.target)
+        handleNewCommentAddedToDom(entry.target)
+        observer.unobserve(entry.target)
+      }
     })
   }
 
   for (const p of nodes) {
-    if(!p || isCommentAlreadyProcessed(p)) continue;
-    const id = getUniqueId();
-    p.setAttribute(ROVIE_ID,id);
-    proceedCommentsMap[id] = p;
-    observer.observe(p);
+    const id = getCommentId(p as HTMLElement)
+    if (!p || observersMap.has(id)) {
+      observer.unobserve(p)
+      continue
+    }
+    observersMap.set(id, true)
+    observer.observe(p)
   }
-
 }
 
 const initMutationObserver = () => {
-  function processComment(comment:any) {
-    return comment.querySelector("[data-testid=comment]");
-}
-function getComments(parent:any) {
-    return [...(parent ?? document).querySelectorAll(".Comment")].map(processComment);
-}
+  function getComments(parent: any) {
+    return [...(parent ?? document).querySelectorAll('.Comment')]
+  }
+  function getNewComments(parent: any, oldComments: any) {
+    const allComments = getComments(parent)
+    return allComments.filter(
+      (comment) => !oldComments.includes(comment) && !isCommentAlreadyProcessed(comment),
+    )
+  }
 
-function getNewComments(parent:any, oldComments:any) {
-    const allComments = getComments(parent);
-    return allComments.filter(comment => !oldComments.includes(comment));
-}
-
-let oldComments = getComments(document);
-const mo = new MutationObserver(() => {
-    const newComments = getNewComments(document, oldComments);
-    oldComments = getComments(document);
+  let oldComments = getComments(document)
+  const mo = new MutationObserver(() => {
+    const newComments = getNewComments(document, oldComments)
+    oldComments = getComments(document)
     if (newComments.length > 0) {
-        initIntersectionObserver(newComments);
+      // logger('New comments added:', newComments)
+      initIntersectionObserver(newComments)
     }
-});
-mo.observe(document, { attributes: true, childList: true, subtree: true });
+  })
+  mo.observe(document, { attributes: true, childList: true, subtree: true })
 }
-
-
 
 const handleImdbPage = () => {
-  const pageInfo  = getImdbPageInfo();
-  if(!pageInfo) return;
-  const {movieToOpen} = pageInfo;
-  if(movieToOpen){
-    return handleMovieToOpen();
+  const pageInfo = getImdbPageInfo()
+  if (!pageInfo) return
+  const { movieToOpen } = pageInfo
+  if (movieToOpen) {
+    return handleMovieToOpen()
   }
 }
 
-const handleRedditPage = (action:Actions) => {
+const handleRedditPage = (action: Actions) => {
+  observersMap.clear()
   injectDialogIntoDom()
-  const {postId,subReddit} = getPageInfo();
+  const { postId, subReddit } = getPageInfo();
+  console.log({ postId, subReddit, action });
+  
   switch (action) {
     case Actions.ANALYZE_MOVIE_IN_COMMENTS:
-      if(!postId || !config[SupportedSites.REDDIT].allowedSubReddits.includes(subReddit)){
+      if (
+        !postId ||
+        !config[SupportedSites.REDDIT].allowedSubReddits.includes(subReddit)
+      ) {
         return
       }
-      initIntersectionObserver();
+      if (
+        !document.querySelector(
+          config[SupportedSites.REDDIT].selectors.overlayScrollContainer,
+        )
+      ) {
+        initIntersectionObserver()
+      }
       initMutationObserver()
-      break;
+      break
     default:
-      break;
+      break
   }
   return true
 }
 
-runtime.onMessage.addListener(async ({to,from,action}: Message,sender) => {
-  if(to !== "content") {
-    return;
-  };
+runtime.onMessage.addListener(async ({ to, from, action }: Message, sender) => {
+  if (to !== 'content') {
+    return
+  }
   const site = getCurrentSite();
-   logger(`onMessage ${from} -> ${to} -> action: "${action}", site: "${site}"`);
+  await new Promise((resolve) => setTimeout(resolve, 1500))
+  logger(`onMessage ${from} -> ${to} -> action: "${action}", site: "${site}"`)
   switch (site) {
     case SupportedSites.IMDB:
       return handleImdbPage()
     case SupportedSites.REDDIT:
       return handleRedditPage(action)
     default:
-      break;
+      break
   }
- 
+
   return true
 })
 
+document.addEventListener('click', () => {
+  const dialogOpen = document.querySelector(
+    `[data-dialog=${ROVIE_DAILOG_ID}][open]`,
+  ) as HTMLDialogElement
+  // logger(dialogOpen)
 
-document.addEventListener("click",()=>{
-  const dialogOpen = document.querySelector(`[data-dialog=${ROVIE_DAILOG_ID}][open]`) as HTMLDialogElement;
-  console.log(dialogOpen);
-  
-  if(dialogOpen){
-    dialogOpen.close();
+  if (dialogOpen) {
+    dialogOpen.close()
   }
 })
-

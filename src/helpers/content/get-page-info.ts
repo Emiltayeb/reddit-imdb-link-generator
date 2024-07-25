@@ -1,4 +1,5 @@
-import { ROVIE_IMDB_URL_OPEN_QP, SupportedSites, SupportedSitesUrls } from "./constants";
+import { SupportedSitesUrls } from "../types";
+import { ROVIE_IMDB_URL_OPEN_QP, SupportedSites } from "./constants";
 
 export const getPageInfo =  () => {
     let postId = "",subReddit="",movieToOpen:string | null="";
